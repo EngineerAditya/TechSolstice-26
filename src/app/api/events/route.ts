@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       .select("*")
       .order("date", { ascending: false });
 
-      console.log("Fetched events data:", data);
+      // console.log("Fetched events data:", data);
       
 
     if (error) {

@@ -13,7 +13,7 @@ async function getEvents(): Promise<Event[]> {
     .order("date", { ascending: false });
 
   if (error) {
-    console.error("Error fetching events:", error);
+    // console.error("Error fetching events:", error);
     return [];
   }
 
