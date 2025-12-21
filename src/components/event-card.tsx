@@ -26,7 +26,7 @@ export type Event = {
   name: string;
   shortDescription: string;
   longDescription: string;
-  category: "tech" | "workshop" | "flagship" | "gaming";
+  category: string;
   date: string;
   time: string;
   venue: string;
