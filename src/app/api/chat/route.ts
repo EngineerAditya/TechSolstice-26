@@ -150,7 +150,7 @@ async function handleSimpleEventLookup(query: string, eventNameHint?: string): P
     : fuzzyMatchEventName(query, eventNames);
 
   if (!matchedEventName) {
-    return `I couldn't find a specific event matching your query. Here are some available events: ${eventNames.slice(0, 5).join(', ')}. Please be more specific!`;
+    return `I couldn't find a specific event matching your query. Here are some available events: ${eventNames.slice(0, 5).join(', ')}. Please be more specific.`;
   }
 
   const event = events.find(e => e.name === matchedEventName);
@@ -161,20 +161,27 @@ async function handleSimpleEventLookup(query: string, eventNameHint?: string): P
   // Determine what the user is asking about
   const queryLower = query.toLowerCase();
 
+  // If user asked about time
   if (/\b(?:when|time|timing|schedule)\b/i.test(queryLower)) {
-    return `**${event.name}** is scheduled on ${formatDate(event.date)} at ${formatTime(event.time)}.`;
+    return `${event.name} is scheduled on ${formatDate(event.date)} at ${formatTime(event.time)}.`;
   }
 
+  // If user asked about venue/location
   if (/\b(?:where|venue|location|place)\b/i.test(queryLower)) {
-    return `**${event.name}** will be held at **${event.venue || 'TBA'}** on ${formatDate(event.date)}.`;
+    return `${event.name} will be held at ${event.venue || 'TBA'} on ${formatDate(event.date)}.`;
   }
 
+  // If user explicitly asked "what is" or similar, return short description only
   if (/\b(?:what is|what's|whats|tell me about|describe|explain)\b/i.test(queryLower)) {
-    // User wants to know what the event is about
-    return formatEventInfo(event);
+    return event.shortDescription || event.longDescription || `${event.name} - more details coming soon.`;
   }
 
-  // General info about the event
+  // If user asked for more details / full description
+  if (/\b(?:more|details|full|long description|full description|give me more)\b/i.test(queryLower)) {
+    return event.longDescription || event.shortDescription || `${event.name} - more details coming soon.`;
+  }
+
+  // General info about the event (plain-text)
   return formatEventInfo(event);
 }
 
@@ -209,7 +216,7 @@ async function handleNextEventQuery(category?: string): Promise<string> {
   }
 
   const nextEvent = events[0];
-  return `**Next${category ? ` ${category}` : ''} event:** ${formatEventInfo(nextEvent)}`;
+  return `Next${category ? ` ${category}` : ''} event: ${formatEventInfo(nextEvent)}`;
 }
 
 /**
@@ -231,7 +238,7 @@ async function handleEventFilter(filterType: string, filterValue?: string): Prom
   }
 
   if (events.length > 10) {
-    return `Found ${events.length} events. Here are the first 10:\n\n${events.slice(0, 10).map(e => `• **${e.name}** - ${formatDate(e.date)} at ${formatTime(e.time)}`).join('\n')}`;
+    return `Found ${events.length} events. Here are the first 10:\n\n${events.slice(0, 10).map(e => `- ${e.name} - ${formatDate(e.date)} at ${formatTime(e.time)}`).join('\n')}`;
   }
 
   return `Found ${events.length} event(s):\n\n${events.map(e => formatEventInfo(e, true)).join('\n\n')}`;
@@ -242,33 +249,31 @@ async function handleEventFilter(filterType: string, filterValue?: string): Prom
  */
 async function handleComplexQuestion(query: string, conversationHistory: Array<{ role: string; content: string }>): Promise<string> {
   const supabase = await createClient();
-  
+
   // Get ALL events from database for context
   const { data: events } = await supabase
     .from('events')
     .select('*')
     .order('date')
     .order('time');
-  
+
   // Get relevant context from vector database (PDF content)
   const vectorContext = await getRelevantContext(query);
-  
-  // Build events context
+
+  // Build events context (exclude id and imageUrl when sending to LLM)
   let eventsContext = '';
   if (events && events.length > 0) {
     eventsContext = `\n\nAVAILABLE EVENTS AT TECHSOLSTICE:\n`;
     events.forEach(event => {
-      eventsContext += `\n**${event.name}**\n`;
-      eventsContext += `  - Category: ${event.category || 'N/A'}\n`;
-      eventsContext += `  - Date: ${event.date || 'TBA'}\n`;
-      eventsContext += `  - Time: ${event.time || 'TBA'}\n`;
-      eventsContext += `  - Venue: ${event.venue || 'TBA'}\n`;
-      if (event.shortDescription) {
-        eventsContext += `  - Description: ${event.shortDescription}\n`;
-      }
-      if (event.prize_pool) {
-        eventsContext += `  - Prize Pool: ₹${event.prize_pool}\n`;
-      }
+      const evLines: string[] = [];
+      evLines.push(`${event.name}`);
+      if (event.category) evLines.push(`Category: ${event.category}`);
+      evLines.push(`Date: ${event.date || 'TBA'}`);
+      evLines.push(`Time: ${event.time || 'TBA'}`);
+      evLines.push(`Venue: ${event.venue || 'TBA'}`);
+      if (event.shortDescription) evLines.push(`Description: ${event.shortDescription}`);
+      if (event.prize_pool) evLines.push(`Prize Pool: ₹${event.prize_pool}`);
+      eventsContext += `\n- ${evLines.join(' | ')}`;
     });
   }
 
@@ -297,8 +302,18 @@ ${vectorContext ? `\nADDITIONAL INFORMATION FROM RULES & GUIDELINES:\n${vectorCo
   }
 
   // Generate response using LLM
-  const response = await generateChatResponse(prompt, systemInstruction);
-  return response;
+  try {
+    const response = await generateChatResponse(prompt, systemInstruction);
+    return response;
+  } catch (err: any) {
+    console.error('LLM error in complex question handler:', err?.message || err);
+    // Fallback: return a short plain-text summary of events and a rate-limit style message
+    if (events && events.length > 0) {
+      const topEvents = events.slice(0, 5).map(e => `${e.name} (${formatDate(e.date)} at ${formatTime(e.time)})`).join('\n');
+      return `Sorry, I'm having trouble contacting the language model right now. Here are some events you can ask about:\n${topEvents}\n\nPlease try again in a few moments.`;
+    }
+    return `Sorry, I'm having trouble contacting the language model right now. Please try again in a few moments.`;
+  }
 }
 
 /**
@@ -306,14 +321,16 @@ ${vectorContext ? `\nADDITIONAL INFORMATION FROM RULES & GUIDELINES:\n${vectorCo
  */
 function formatEventInfo(event: any, short: boolean = false): string {
   if (short) {
-    return `• **${event.name}** - ${formatDate(event.date)} at ${formatTime(event.time)} | ${event.venue || 'TBA'}`;
+    return `- ${event.name} - ${formatDate(event.date)} at ${formatTime(event.time)} | ${event.venue || 'TBA'}`;
   }
 
-  return `**${event.name}**
-📅 Date: ${formatDate(event.date)}
-⏰ Time: ${formatTime(event.time)}
-📍 Venue: ${event.venue || 'TBA'}
-📝 ${event.shortDescription || event.longDescription || 'More details coming soon!'}`;
+  const lines = [];
+  lines.push(`${event.name}`);
+  lines.push(`Date: ${formatDate(event.date)}`);
+  lines.push(`Time: ${formatTime(event.time)}`);
+  lines.push(`Venue: ${event.venue || 'TBA'}`);
+  lines.push(`${event.shortDescription || event.longDescription || 'More details coming soon!'}`);
+  return lines.join('\n');
 }
 
 /**

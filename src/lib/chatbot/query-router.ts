@@ -1,4 +1,5 @@
 import Fuzzysort from 'fuzzysort';
+import aliases from './aliases.json';
 
 /**
  * Query intent types
@@ -82,7 +83,6 @@ const EVENT_KEYWORDS = [
   'drone', 'line follower',
   'maze runner',
 ];
-
 /**
  * Analyze user query and determine intent
  */
@@ -168,6 +168,17 @@ export function analyzeQuery(query: string): QueryAnalysis {
  */
 export function extractEventName(query: string): string | undefined {
   const normalizedQuery = query.toLowerCase();
+  // Check manual aliases first (e.g., "cod" -> "COD (Call of Duty)")
+  try {
+    const aliasKeys = Object.keys(aliases || {});
+    for (const a of aliasKeys) {
+      if (normalizedQuery.includes(a.toLowerCase())) {
+        return (aliases as Record<string, string>)[a];
+      }
+    }
+  } catch (e) {
+    // ignore alias resolution errors
+  }
 
   // Simple keyword matching for common events
   for (const keyword of EVENT_KEYWORDS) {
@@ -189,51 +200,65 @@ export function fuzzyMatchEventName(
   threshold: number = -5000
 ): string | null {
   if (eventNames.length === 0) return null;
-  
+
   // Extract potential event name from query
   // Remove common question words
   const cleanQuery = query
     .toLowerCase()
     .replace(/\b(what is|whats|what's|when is|where is|tell me about|show me|about|the)\b/gi, '')
     .trim();
-  
+
   // Try exact match first (case insensitive)
-  const exactMatch = eventNames.find(name => 
+  const exactMatch = eventNames.find(name =>
     name.toLowerCase() === cleanQuery ||
     cleanQuery.includes(name.toLowerCase()) ||
     name.toLowerCase().includes(cleanQuery)
   );
-  
+
   if (exactMatch) return exactMatch;
-  
+
   // Try fuzzy matching
   const results = Fuzzysort.go(cleanQuery, eventNames, {
     threshold,
     limit: 3, // Get top 3 matches
   });
-  
+
   if (results.length > 0) {
     // Check if query contains keywords from the matched event
     for (const result of results) {
       const eventLower = result.target.toLowerCase();
       const eventWords = eventLower.split(/[\s\-\(\)]+/).filter(w => w.length > 2);
-      
+
       // Check if any significant word from the event name is in the query
-      const hasMatchingWord = eventWords.some(word => 
+      const hasMatchingWord = eventWords.some(word =>
         cleanQuery.includes(word) || word.includes(cleanQuery)
       );
-      
+
       if (hasMatchingWord || result.score > threshold) {
         return result.target;
       }
     }
-    
+
     // Return best match if score is good enough
     if (results[0].score > threshold * 0.8) {
       return results[0].target;
     }
   }
-  
+
+  // If still no match, check aliases mapping: if query includes an alias, return canonical event name if present
+  try {
+    const aliasKeys = Object.keys(aliases || {});
+    for (const a of aliasKeys) {
+      if (cleanQuery.includes(a.toLowerCase())) {
+        const canonical = (aliases as Record<string, string>)[a];
+        const found = eventNames.find(n => n.toLowerCase() === canonical.toLowerCase());
+        if (found) return found;
+      }
+    }
+  } catch (e) {
+    // ignore alias lookup errors
+  }
+
   return null;
 }/**
  * Extract date information from query

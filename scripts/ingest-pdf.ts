@@ -15,6 +15,8 @@
 
 import { readFileSync } from 'fs';
 import { parse } from 'path';
+// The `pdf-parse` package uses CommonJS; TypeScript may complain about default export.
+// @ts-ignore
 import pdf from 'pdf-parse';
 import { createClient } from '@supabase/supabase-js';
 import { generateEmbeddingsBatch } from '../src/lib/chatbot/gemini-client';
