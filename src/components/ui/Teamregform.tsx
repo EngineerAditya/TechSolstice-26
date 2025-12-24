@@ -1,7 +1,9 @@
+// ui/Teamregform.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 type TeamregformProps = {
   eventId: string;
@@ -12,7 +14,7 @@ type TeamregformProps = {
   onSuccess?: (teamId: string) => void;
   actionPath?: string;
   useEmails?: boolean;
-  onBack?: () => void;        // for flipping back
+  onBack?: () => void;
 };
 
 export default function Teamregform({
@@ -26,19 +28,45 @@ export default function Teamregform({
   useEmails = true,
   onBack,
 }: TeamregformProps) {
+  const endpoint =
+    actionPath || (useEmails ? "/api/teams/createWithEmails" : "/api/teams/create");
+  const createAsCaptainEndpoint = "/api/teams/createWithEmailsAsCaptain";
 
   const [teamName, setTeamName] = useState("");
   const [members, setMembers] = useState<string[]>(
     Array.from({ length: minSize }, () => ""),
   );
-  const [leaderEmail, setLeaderEmail] = useState<string>(captainName || "");
+  const [leaderEmail, setLeaderEmail] = useState<string>(""); // no default "Your Name"
   const [leaderValidation, setLeaderValidation] =
     useState<{ ok: boolean; message?: string } | null>(null);
-  const [isPending, setIsPending] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
+  // Optional: fetch captain email by id
   React.useEffect(() => {
-    if (captainName) setLeaderEmail(captainName);
-  }, [captainName]);
+    let mounted = true;
+    async function fetchEmail() {
+      try {
+        if (!captainId) return;
+        const res = await fetch(
+          `/api/users/byId?userId=${encodeURIComponent(captainId)}`,
+        );
+        const json = await res.json();
+        if (!mounted) return;
+        if (res.ok && json.ok && json.data?.email) {
+          setLeaderEmail(json.data.email);
+        } else if (captainName) {
+          // If you want name as fallback, uncomment:
+          // setLeaderEmail(captainName);
+        }
+      } catch {
+        // ignore
+      }
+    }
+    fetchEmail();
+    return () => {
+      mounted = false;
+    };
+  }, [captainId, captainName]);
 
   function updateMember(i: number, val: string) {
     setMembers((prev) => prev.map((m, idx) => (idx === i ? val : m)));
@@ -75,33 +103,87 @@ export default function Teamregform({
       return;
     }
 
-    // Frontend-only: simulate async request and always succeed (mock)
-    setIsPending(true);
-    setTimeout(() => {
-      setIsPending(false);
-      toast.success("Team registered (mock)");
-      onSuccess?.(`mock-team-${Date.now()}`);
-    }, 700);
+    if (useEmails) {
+      const payload: Record<string, unknown> = {
+        eventId,
+        name: teamName.trim(),
+        memberEmails: filtered,
+      };
+      if (leaderEmail && leaderEmail.trim()) {
+        payload["captainEmail"] = leaderEmail.trim().toLowerCase();
+      }
+
+      startTransition(async () => {
+        try {
+          const res = await fetch(createAsCaptainEndpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const json = await res.json();
+          if (!res.ok || !json.ok) {
+            toast.error(json.error || "Failed to create team");
+          } else {
+            toast.success("Team registered");
+            onSuccess?.(json.data.teamId);
+          }
+        } catch (err) {
+          const msg =
+            err instanceof Error ? err.message : "Network error";
+          toast.error(msg);
+        }
+      });
+    } else {
+      const payload = {
+        eventId,
+        captainId,
+        name: teamName.trim(),
+        memberIds: filtered,
+      };
+
+      startTransition(async () => {
+        try {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const json = await res.json();
+          if (!res.ok || !json.ok) {
+            toast.error(json.error || "Failed to create team");
+          } else {
+            toast.success("Team registered");
+            onSuccess?.(json.data.teamId);
+          }
+        } catch (err) {
+          const msg =
+            err instanceof Error ? err.message : "Network error";
+          toast.error(msg);
+        }
+      });
+    }
   }
 
   return (
     <div className="h-full flex flex-col bg-slate-900 text-white">
-      <div className="flex items-center justify-between px-6 pt-6">
+      <div className="flex items-center justify-between px-6 pt-6 pb-2">
         <h2 className="text-2xl font-semibold">Team Registration</h2>
         {onBack && (
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-white/40 text-white"
             onClick={onBack}
-            className="text-sm px-3 py-1 rounded-full border border-white/40 hover:bg-white/10"
           >
             Back
-          </button>
+          </Button>
         )}
       </div>
 
+      {/* Scrollable form area, nothing above it with pointer-events */}
       <form
         onSubmit={handleSubmit}
-        className="flex-1 px-6 pb-8 pt-4 overflow-auto space-y-4"
+        className="flex-1 px-6 pb-8 pt-2 overflow-y-auto space-y-4"
       >
         {/* Team name */}
         <div className="space-y-1 text-left">
@@ -125,18 +207,41 @@ export default function Teamregform({
               setLeaderEmail(e.target.value);
               setLeaderValidation(null);
             }}
-            onBlur={() => {
+            onBlur={async () => {
               const v = (leaderEmail || "").trim().toLowerCase();
               if (!v) {
-                setLeaderValidation({ ok: false, message: "Leader email required" });
+                setLeaderValidation({
+                  ok: false,
+                  message: "Leader email required",
+                });
                 return;
               }
               if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) {
-                setLeaderValidation({ ok: false, message: "Invalid email format" });
+                setLeaderValidation({
+                  ok: false,
+                  message: "Invalid email format",
+                });
                 return;
               }
-              // Frontend-only: assume valid if format checks out
-              setLeaderValidation({ ok: true });
+              try {
+                const res = await fetch(
+                  `/api/users/byEmail?email=${encodeURIComponent(v)}`,
+                );
+                const json = await res.json();
+                if (!res.ok || !json.ok) {
+                  setLeaderValidation({
+                    ok: false,
+                    message: "User not found",
+                  });
+                } else {
+                  setLeaderValidation({ ok: true });
+                }
+              } catch {
+                setLeaderValidation({
+                  ok: false,
+                  message: "Lookup failed",
+                });
+              }
             }}
           />
           {leaderValidation && !leaderValidation.ok && (
@@ -155,13 +260,13 @@ export default function Teamregform({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-base font-medium">
-                Team Members ({useEmails ? "Emails" : "User IDs"})
+                Team Members (Emails)
               </label>
               <button
                 type="button"
                 onClick={addMember}
                 disabled={!!maxSize && members.length >= maxSize}
-                className="text-xs px-2 py-1 rounded bg-black text-white disabled:opacity-40"
+                className="text-wrap px-3 py-2 rounded-2xl bg-black text-white disabled:opacity-40 hover:bg-gray-600"
               >
                 Add Member
               </button>
@@ -172,14 +277,12 @@ export default function Teamregform({
                   className="w-full border border-white/20 bg-black/20 rounded px-3 py-2 text-base outline-none focus:border-cyan-400"
                   value={m}
                   onChange={(e) => updateMember(i, e.target.value)}
-                  placeholder={`Member #${i + 1} ${
-                    useEmails ? "email" : "user ID"
-                  }`}
+                  placeholder={`Member #${i + 1} email`}
                 />
                 <button
                   type="button"
                   onClick={() => removeMember(i)}
-                  className="text-sm px-2 py-1 rounded bg-red-600 text-white disabled:opacity-50"
+                  className="text-sm px-2 py-1 rounded bg-red-600 text-white disabled:opacity-50 hover:bg-red-700"
                   disabled={members.length <= minSize}
                 >
                   Remove
@@ -190,13 +293,13 @@ export default function Teamregform({
         )}
 
         {/* Submit */}
-        <button
+        <Button
           type="submit"
           disabled={isPending}
-          className="mt-4 w-full rounded bg-cyan-500 hover:bg-cyan-600 text-black font-bold py-2 disabled:opacity-50"
+          className="mt-4 w-full bg-cyan-500 hover:bg-cyan-600 text-black font-bold disabled:opacity-50"
         >
           {isPending ? "Registering..." : "Register"}
-        </button>
+        </Button>
       </form>
     </div>
   );
