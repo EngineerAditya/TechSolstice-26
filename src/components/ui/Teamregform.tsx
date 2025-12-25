@@ -172,7 +172,7 @@ export default function Teamregform({
           <Button
             variant="outline"
             size="sm"
-            className="border-white/40 text-white"
+            className="border-white/40 text-white hover:bg-white/10"
             onClick={onBack}
           >
             Back
@@ -203,6 +203,7 @@ export default function Teamregform({
           <input
             className="w-full border border-white/20 bg-black/20 rounded px-3 py-2 text-base outline-none focus:border-cyan-400"
             value={leaderEmail}
+            placeholder="Team Leader's Email"
             onChange={(e) => {
               setLeaderEmail(e.target.value);
               setLeaderValidation(null);
@@ -258,21 +259,13 @@ export default function Teamregform({
           </div>
         ) : (
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between py-2">
               <label className="text-base font-medium">
                 Team Members (Emails)
               </label>
-              <button
-                type="button"
-                onClick={addMember}
-                disabled={!!maxSize && members.length >= maxSize}
-                className="text-wrap px-3 py-2 rounded-2xl bg-black text-white disabled:opacity-40 hover:bg-gray-600"
-              >
-                Add Member
-              </button>
-            </div>
+              </div>
             {members.map((m, i) => (
-              <div key={i} className="flex items-center gap-2">
+              <div key={i} className="flex items-center gap-2 ">
                 <input
                   className="w-full border border-white/20 bg-black/20 rounded px-3 py-2 text-base outline-none focus:border-cyan-400"
                   value={m}
@@ -289,6 +282,15 @@ export default function Teamregform({
                 </button>
               </div>
             ))}
+              <div className="">
+                <button
+                  type="button"
+                  onClick={addMember}
+                  className="relative left-1/2 top-7 -translate-x-1/2 -translate-y-1/2 h-10 inline-flex items-center text-sm px-4 rounded-2xl border border-white/20 bg-transparent text-white hover:bg-white/30 box-border cursor-pointer"
+                >
+                  Add member
+                </button>
+              </div>
           </div>
         )}
 
@@ -300,6 +302,7 @@ export default function Teamregform({
         >
           {isPending ? "Registering..." : "Register"}
         </Button>
+
       </form>
     </div>
   );

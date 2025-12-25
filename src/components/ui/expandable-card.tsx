@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -8,9 +9,9 @@ interface ExpandableCardProps {
   title: string;
   src?: string;
   description?: string;
-  children?: React.ReactNode;      // front overlay content
-  backContent?: React.ReactNode;   // back overlay content
-  isFlipped?: boolean;             // controlled from parent
+  children?: React.ReactNode;
+  backContent?: React.ReactNode;
+  isFlipped?: boolean;
   className?: string;
   classNameExpanded?: string;
   [key: string]: any;
@@ -28,136 +29,143 @@ export function ExpandableCard({
   ...props
 }: ExpandableCardProps) {
   const [active, setActive] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
   const cardRef = React.useRef<HTMLDivElement>(null);
   const id = React.useId();
+
+  React.useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   React.useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setActive(false);
     };
 
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
-        setActive(false);
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
+    if (active) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", onKeyDown);
+    } else {
+      document.body.style.overflow = "unset";
+    }
 
     return () => {
       window.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
     };
-  }, []);
+  }, [active]);
 
-  return (
-    <>
-      {/* Backdrop */}
-      <AnimatePresence>
-        {active && (
+  const expandedContent = (
+    <AnimatePresence>
+      {active && (
+        <>
+          {/* Backdrop - click to close */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-white/30 backdrop-blur-md h-full w-full z-10"
+            onClick={() => setActive(false)}
+            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[99999]"
           />
-        )}
-      </AnimatePresence>
 
-      {/* Expanded overlay – whole card flips */}
-      <AnimatePresence>
-        {active && (
-          <div className="fixed inset-0 grid place-items-center z-100 sm:mt-16 before:pointer-events-none bg-black/50">
+          {/* Card Container */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 flex items-center justify-center z-[99999] pointer-events-none"
+            style={{
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
+              paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)",
+              paddingLeft: "calc(env(safe-area-inset-left, 0px) + 16px)",
+              paddingRight: "calc(env(safe-area-inset-right, 0px) + 16px)",
+            }}
+          >
             <motion.div
               layoutId={`card-${title}-${id}`}
               ref={cardRef}
+              onClick={(e) => e.stopPropagation()}
               className={cn(
-                "w-full max-w-212.5 h-[80vh] relative perspective-[1000px]",
-                classNameExpanded,
+                "w-full max-w-[900px] h-[85vh] relative perspective-[1000px] pointer-events-auto",
+                classNameExpanded
               )}
               {...props}
             >
-              {/* 3D wrapper that rotates */}
+              {/* 3D flip wrapper */}
               <div
-                className={cn(
-                  "absolute inset-0 transition-transform duration-700 ease-in-out transform-3d",
-                  isFlipped ? "transform-[rotateY(180deg)]" : "",
-                )}
+                className="absolute inset-0 transition-transform duration-700 ease-in-out"
+                style={{
+                  transformStyle: "preserve-3d",
+                  transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                }}
               >
-                {/* FRONT face – full card, with border & radius */}
-                <div className="absolute inset-0 backface-hidden rounded-3xl bg-black/60 shadow-sm border border-gray-200/50 overflow-hidden flex flex-col">
-                  {/* Image */}
+                {/* FRONT face */}
+                <div
+                  className="absolute inset-0 rounded-3xl bg-zinc-950 shadow-2xl border border-white/10 overflow-hidden flex flex-col"
+                  style={{ backfaceVisibility: "hidden" }}
+                >
+                  {/* Image Section */}
                   <motion.div layoutId={`image-${title}-${id}`}>
-                    <div className="relative before:absolute before:inset-x-0 before:-bottom-px before:h-17.5 before:z-50 before:bg-linear-to-t before:from-transparent before:to-white/5">
+                    <div className="relative">
                       {src ? (
                         <img
                           src={src}
                           alt={title}
-                          className="w-full h-80 object-cover object-center"
+                          className="w-full h-48 sm:h-56 object-cover object-center"
                         />
                       ) : (
-                        <div className="w-full h-80 bg-linear-to-br from-gray-800 to-transparent" />
+                        <div className="w-full h-48 sm:h-56 bg-gradient-to-br from-gray-800 to-zinc-900" />
                       )}
                     </div>
                   </motion.div>
 
-                  {/* Header + front body */}
-                  <div className="relative flex-1 before:absolute before:inset-x-0 before:bottom-0 before:h-17.5 before:z-50 before:bg-linear-to-t before:from-transparent before:to-white/5">
-                    <div className="flex justify-between items-start p-6">
-                      <div>
+                  {/* Header + Content */}
+                  <div className="relative flex-1 flex flex-col">
+                    <div className="flex justify-between items-start p-4 sm:p-6">
+                      <div className="flex-1">
                         <motion.p
                           layoutId={`description-${description}-${id}`}
-                          className="text-zinc-500 dark:text-zinc-400 text-base"
+                          className="text-zinc-400 text-sm sm:text-base"
                         >
                           {description}
                         </motion.p>
                         <motion.h3
                           layoutId={`title-${title}-${id}`}
-                          className="font-semibold text-black dark:text-white text-2xl sm:text-3xl mt-1"
+                          className="font-bold text-white text-xl sm:text-3xl mt-1"
                         >
                           {title}
                         </motion.h3>
                       </div>
 
                       {/* Close button */}
-                      <motion.button
+                      <button
                         aria-label="Close card"
-                        layoutId={`button-${title}-${id}`}
-                        className="h-10 w-10 shrink-0 flex items-center justify-center rounded-full bg-transparent text-white hover:bg-white border border-white hover:border-gray-300/70 hover:text-black transition-colors duration-300 focus:outline-none"
+                        className="h-10 w-10 shrink-0 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white hover:text-black transition-colors duration-300"
                         onClick={() => setActive(false)}
                       >
-                        <motion.div
-                          animate={{ rotate: active ? 45 : 0 }}
-                          transition={{ duration: 0.4 }}
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M5 12h14" />
-                            <path d="M12 5v14" />
-                          </svg>
-                        </motion.div>
-                      </motion.button>
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </button>
                     </div>
 
-                    <div className="relative px-4 sm:px-6 pb-10 h-[calc(100%-80px)] overflow-auto">
+                    {/* Scrollable front content */}
+                    <div className="flex-1 px-4 sm:px-6 pb-6 overflow-auto">
                       <motion.div
-                        layout
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="text-zinc-500 dark:text-zinc-400 text-base pb-10 flex flex-col items-start gap-4"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-zinc-300 text-sm sm:text-base flex flex-col items-start gap-4"
                       >
                         {children}
                       </motion.div>
@@ -165,51 +173,61 @@ export function ExpandableCard({
                   </div>
                 </div>
 
-                {/* BACK face – full card */}
-                <div className="absolute inset-0 backface-hidden transform-[rotateY(180deg)] rounded-3xl bg-slate-900 shadow-sm border border-gray-200/50 overflow-hidden flex flex-col">
-                  {backContent}
+                {/* BACK face */}
+                <div
+                  className="absolute inset-0 rounded-3xl bg-slate-900 shadow-2xl border border-white/10 overflow-hidden flex flex-col"
+                  style={{
+                    backfaceVisibility: "hidden",
+                    transform: "rotateY(180deg)",
+                  }}
+                >
+                  <div className="flex-1 overflow-auto px-4 sm:px-6 py-6">
+                    {backContent}
+                  </div>
                 </div>
               </div>
             </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+
+  return (
+    <>
+      {mounted && createPortal(expandedContent, document.body)}
 
       {/* Collapsed card */}
       <motion.div
-        role="dialog"
-        aria-labelledby={`card-title-${id}`}
-        aria-modal="true"
         layoutId={`card-${title}-${id}`}
         onClick={() => setActive(true)}
         className={cn(
-          "p-3 flex flex-col justify-between items-center bg-white/5 shadow-sm rounded-2xl cursor-pointer border-2 border-gray-600/70",
-          className,
+          "p-3 flex flex-col bg-white/5 hover:bg-white/10 transition-colors shadow-sm rounded-2xl cursor-pointer border border-white/10",
+          className
         )}
       >
-        <div className="flex gap-4 flex-col sm:flex-row items-start">
-          <motion.div layoutId={`image-${title}-${id}`}>
+        <div className="flex gap-4 flex-col sm:flex-row items-center sm:items-start">
+          <motion.div layoutId={`image-${title}-${id}`} className="w-full sm:w-auto">
             {src ? (
               <img
                 src={src}
                 alt={title}
-                className="w-full sm:w-64 h-40 sm:h-56 rounded-lg object-cover object-center"
+                className="w-full sm:w-64 h-40 sm:h-48 rounded-lg object-cover"
               />
             ) : (
-              <div className="w-full sm:w-64 h-40 sm:h-56 rounded-lg bg-linear-to-br from-gray-800 to-transparent" />
+              <div className="w-full sm:w-64 h-40 sm:h-48 rounded-lg bg-zinc-800" />
             )}
           </motion.div>
-          <div className="flex-1">
+          <div className="flex-1 text-center sm:text-left py-2">
             <motion.h3
-              id={`card-title-${id}`}
               layoutId={`title-${title}-${id}`}
-              className="text-black dark:text-white md:text-left font-semibold text-lg sm:text-xl"
+              className="text-white font-semibold text-lg sm:text-xl"
             >
               {title}
             </motion.h3>
             <motion.p
               layoutId={`description-${description}-${id}`}
-              className="text-zinc-500 dark:text-zinc-400 md:text-left text-sm font-medium"
+              className="text-zinc-400 text-sm font-medium"
             >
               {description}
             </motion.p>
