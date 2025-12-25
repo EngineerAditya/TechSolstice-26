@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Search, Rocket, Cpu, Code, Gamepad2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { EventCard, type Event } from "@/components/event-card";
-import FlipCard from "./ui/FlipCard";
+
 
 const filterCategories = [
   { name: "All", icon: <Rocket size={16} /> },
@@ -65,6 +65,7 @@ export function EventsClient({
     <>
       {/* Filters and Search */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-4 px-4 pt-20">
+        
         <div className="flex flex-wrap justify-center gap-2">
           {filterCategories.map((filter) => (
             <Button

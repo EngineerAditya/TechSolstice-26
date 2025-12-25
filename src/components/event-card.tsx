@@ -1,4 +1,3 @@
-// event-card.tsx
 "use client";
 
 import { useState } from "react";
@@ -22,11 +21,11 @@ export type Event = {
 export function EventCard({ event }: { event: Event }) {
   const [isFlipped, setIsFlipped] = useState(false);
 
-  // TODO: replace with real logged‑in user id / name
   const currentUserId = "CURRENT_USER_ID";
   const currentUserName = "Your Name";
 
   return (
+    
     <ExpandableCard
       title={event.name}
       src={event.imageUrl}
@@ -42,40 +41,39 @@ export function EventCard({ event }: { event: Event }) {
           useEmails={true}
           onBack={() => setIsFlipped(false)}
           onSuccess={() => {
-            // optional: flip back or close overlay after success
             setIsFlipped(false);
           }}
         />
       }
     >
       {/* FRONT content of overlay */}
-      <div className="space-y-4 pt-2">
-        <p className="text-neutral-300">{event.longDescription}</p>
+      <div className="space-y-6 pt-2 w-full">
+        <p className="text-neutral-300 leading-relaxed">{event.longDescription}</p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
-            <Calendar size={16} className="text-cyan-400" />
-            <span>{event.date}</span>
+          <div className="flex items-center gap-2 p-3 bg-white/5 rounded-lg">
+            <Calendar size={18} className="text-cyan-400 shrink-0" />
+            <span className="text-sm">{event.date}</span>
           </div>
-          <div className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
-            <Clock size={16} className="text-cyan-400" />
-            <span>{event.time}</span>
+          <div className="flex items-center gap-2 p-3 bg-white/5 rounded-lg">
+            <Clock size={18} className="text-cyan-400 shrink-0" />
+            <span className="text-sm">{event.time}</span>
           </div>
-          <div className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
-            <MapPin size={16} className="text-cyan-400" />
-            <span>{event.venue}</span>
+          <div className="flex items-center gap-2 p-3 bg-white/5 rounded-lg">
+            <MapPin size={18} className="text-cyan-400 shrink-0" />
+            <span className="text-sm">{event.venue}</span>
           </div>
         </div>
 
-<div className="px-4 pb-4 pt-2 ">
-    <Button
-      onClick={() => setIsFlipped(true)}
-      size="lg"
-      className="w-full bg-cyan-500 hover:bg-cyan-600 text-black font-bold"
-    >
-      Registration
-    </Button>
-  </div>
+        <div className="w-full flex items-center justify-center pt-4">
+          <Button
+            onClick={() => setIsFlipped(true)}
+            size="lg"
+            className="bg-cyan-500 hover:bg-cyan-600 text-black font-bold px-12"
+          >
+            Register Now
+          </Button>
+        </div>
       </div>
     </ExpandableCard>
   );

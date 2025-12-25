@@ -4,6 +4,8 @@ import * as React from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import ASMRStaticBackground from "./asmr-static-background";
+
 
 interface ExpandableCardProps {
   title: string;
@@ -65,7 +67,7 @@ export function ExpandableCard({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setActive(false)}
-            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[99999]"
+            className="fixed inset-0 bg-black/80 backdrop-blur-md z-99999"
           />
 
           {/* Card Container */}
@@ -73,7 +75,7 @@ export function ExpandableCard({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 flex items-center justify-center z-[99999] pointer-events-none"
+            className="fixed inset-0 flex items-center justify-center z-99999 pointer-events-none"
             style={{
               paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
               paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)",
@@ -86,24 +88,28 @@ export function ExpandableCard({
               ref={cardRef}
               onClick={(e) => e.stopPropagation()}
               className={cn(
-                "w-full max-w-[900px] h-[85vh] relative perspective-[1000px] pointer-events-auto",
-                classNameExpanded
-              )}
+  "w-full max-w-[90vw] sm:max-w-[85vw] md:max-w-[75vw] lg:max-w-175 h-[85vh] relative perspective-[1000px] pointer-events-auto",
+  classNameExpanded
+)}
+
               {...props}
             >
               {/* 3D flip wrapper */}
+              
               <div
-                className="absolute inset-0 transition-transform duration-700 ease-in-out"
+                className="absolute inset-0 bg-zinc-900 rounded-2xl transition-transform duration-700 ease-in-out"
                 style={{
                   transformStyle: "preserve-3d",
                   transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
                 }}
               >
+                
                 {/* FRONT face */}
                 <div
-                  className="absolute inset-0 rounded-3xl bg-zinc-950 shadow-2xl border border-white/10 overflow-hidden flex flex-col"
+                  className="absolute inset-0 rounded-3xl shadow-2xl border border-white/10 overflow-hidden flex flex-col"
                   style={{ backfaceVisibility: "hidden" }}
                 >
+                  <ASMRStaticBackground/>
                   {/* Image Section */}
                   <motion.div layoutId={`image-${title}-${id}`}>
                     <div className="relative">
@@ -114,27 +120,27 @@ export function ExpandableCard({
                           className="w-full h-48 sm:h-56 object-cover object-center"
                         />
                       ) : (
-                        <div className="w-full h-48 sm:h-56 bg-gradient-to-br from-gray-800 to-zinc-900" />
+                        <div className="w-full h-48 sm:h-56 bg-linear-to-br from-gray-800 to-zinc-900" />
                       )}
                     </div>
                   </motion.div>
-
                   {/* Header + Content */}
                   <div className="relative flex-1 flex flex-col">
                     <div className="flex justify-between items-start p-4 sm:p-6">
                       <div className="flex-1">
-                        <motion.p
-                          layoutId={`description-${description}-${id}`}
-                          className="text-zinc-400 text-sm sm:text-base"
-                        >
-                          {description}
-                        </motion.p>
+                        
                         <motion.h3
                           layoutId={`title-${title}-${id}`}
                           className="font-bold text-white text-xl sm:text-3xl mt-1"
                         >
                           {title}
                         </motion.h3>
+                        <motion.p
+                          layoutId={`description-${description}-${id}`}
+                          className="text-zinc-400 text-sm sm:text-base"
+                        >
+                          {description}
+                        </motion.p>
                       </div>
 
                       {/* Close button */}
@@ -175,7 +181,7 @@ export function ExpandableCard({
 
                 {/* BACK face */}
                 <div
-                  className="absolute inset-0 rounded-3xl bg-slate-900 shadow-2xl border border-white/10 overflow-hidden flex flex-col"
+                  className="absolute inset-0 rounded-3xl bg-zinc shadow-2xl border border-white/10 overflow-hidden flex flex-col"
                   style={{
                     backfaceVisibility: "hidden",
                     transform: "rotateY(180deg)",

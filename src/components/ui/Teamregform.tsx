@@ -4,7 +4,9 @@
 import React, { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-
+import { ArrowLeft } from "lucide-react";
+import { X } from "lucide-react";
+import ASMRStaticBackground from "./asmr-static-background";
 type TeamregformProps = {
   eventId: string;
   captainId: string;
@@ -165,19 +167,21 @@ export default function Teamregform({
   }
 
   return (
-    <div className="h-full flex flex-col bg-slate-900 text-white">
-      <div className="flex items-center justify-between px-6 pt-6 pb-2">
-        <h2 className="text-2xl font-semibold">Team Registration</h2>
-        {onBack && (
+    <div className="h-full flex flex-col bg-transparent text-white">
+      
+      {onBack && (
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="border-white/40 text-white hover:bg-white/10"
+            className="border-white/40 text-white hover:bg-white/10 w-15"
             onClick={onBack}
           >
-            Back
+          <ArrowLeft className="mr-2 size-max" />
           </Button>
         )}
+      <div className="flex items-center justify-between px-6 pt-6 pb-2">
+        <h2 className="text-2xl font-semibold">Team Registration</h2>
+        
       </div>
 
       {/* Scrollable form area, nothing above it with pointer-events */}
@@ -185,23 +189,24 @@ export default function Teamregform({
         onSubmit={handleSubmit}
         className="flex-1 px-6 pb-8 pt-2 overflow-y-auto space-y-4"
       >
+        <ASMRStaticBackground />
         {/* Team name */}
         <div className="space-y-1 text-left">
           <label className="text-base font-medium">Team Name</label>
           <input
-            className="w-full border border-white/20 bg-black/20 rounded px-3 py-2 text-base outline-none focus:border-cyan-400"
+            className="w-full border border-white/20 bg-black/20 rounded px-3 py-2 text-sm outline-none focus:border-cyan-400"
             value={teamName}
             onChange={(e) => setTeamName(e.target.value)}
-            placeholder="Enter team name"
+            placeholder="Enter Team Name"
             required
           />
         </div>
 
         {/* Leader email */}
         <div className="space-y-1 text-left">
-          <label className="text-base font-medium">Team Leader (email)</label>
+          <label className="text-base font-medium">Team Leader (Email)</label>
           <input
-            className="w-full border border-white/20 bg-black/20 rounded px-3 py-2 text-base outline-none focus:border-cyan-400"
+            className="w-full border border-white/20 bg-black/20 rounded px-3 py-2 text-sm outline-none focus:border-cyan-400"
             value={leaderEmail}
             placeholder="Team Leader's Email"
             onChange={(e) => {
@@ -258,27 +263,27 @@ export default function Teamregform({
             Solo event – no additional members required.
           </div>
         ) : (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between py-2">
+          <div>
+            <div className="flex items-center justify-between">
               <label className="text-base font-medium">
                 Team Members (Emails)
               </label>
               </div>
             {members.map((m, i) => (
-              <div key={i} className="flex items-center gap-2 ">
+              <div key={i} className="flex items-center gap-2 mb-3">
                 <input
                   className="w-full border border-white/20 bg-black/20 rounded px-3 py-2 text-base outline-none focus:border-cyan-400"
                   value={m}
                   onChange={(e) => updateMember(i, e.target.value)}
-                  placeholder={`Member #${i + 1} email`}
+                  placeholder={`Member #${i + 1} Email`}
                 />
                 <button
                   type="button"
                   onClick={() => removeMember(i)}
-                  className="text-sm px-2 py-1 rounded bg-red-600 text-white disabled:opacity-50 hover:bg-red-700"
+                  className="text-xs px-1 py-1 rounded-full  text-white disabled:opacity-50 hover:rotate-90 ease-linear transition-all duration-250"
                   disabled={members.length <= minSize}
                 >
-                  Remove
+                  <X size={17} className="text-red-600"/>
                 </button>
               </div>
             ))}
@@ -286,9 +291,9 @@ export default function Teamregform({
                 <button
                   type="button"
                   onClick={addMember}
-                  className="relative left-1/2 top-7 -translate-x-1/2 -translate-y-1/2 h-10 inline-flex items-center text-sm px-4 rounded-2xl border border-white/20 bg-transparent text-white hover:bg-white/30 box-border cursor-pointer"
+                  className="relative left-1/2 top-7 -translate-x-1/2 -translate-y-1/2 h-10 inline-flex items-center text-sm px-4 rounded-full border border-white bg-transparent text-white hover:bg-gray-600 box-border cursor-pointer"
                 >
-                  Add member
+                  Add Member
                 </button>
               </div>
           </div>
