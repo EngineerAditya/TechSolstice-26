@@ -6,8 +6,9 @@ export function HeroRobot() {
   return (
     // Container for the hero section - full screen and responsive
     <section className="relative h-screen w-full overflow-hidden">
-      {/* Dark base to contrast against background particles */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
+        {/* Dark base to contrast against background particles
+          Cover the entire hero area so the navbar blends seamlessly */}
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
       
       {/* Spline 3D Scene - Touch-enabled for mobile */}
       <div className="absolute inset-0 z-10">

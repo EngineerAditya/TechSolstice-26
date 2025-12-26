@@ -21,17 +21,30 @@ export function NavBar({ items, className }: NavBarProps) {
 
   return (
     <>
-      {/* Full-width background strip that matches the gradient */}
-      <div className="fixed top-0 left-0 right-0 h-20 bg-gradient-to-b from-black/95 via-black/80 to-transparent backdrop-blur-sm z-[99] pointer-events-none" />
+      {/* Full-width background strip that blends seamlessly with the page background */}
+      <div
+        className="fixed top-0 left-0 right-0 h-20 z-[98] pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.05) 40%, transparent 100%)",
+        }}
+      />
       
       {/* Navbar pill */}
       <div
         className={cn(
-          "fixed top-4 left-1/2 -translate-x-1/2 z-[100] transition-all duration-300",
+          "fixed top-4 left-1/2 -translate-x-1/2 z-[101] transition-all duration-300",
           className,
         )}
       >
-      <div className="flex items-center gap-3 bg-white/5 border border-white/10 backdrop-blur-xl py-1 px-2 rounded-full shadow-[0_8px_32px_0_rgba(255,255,255,0.08)]">
+      <div
+        className="flex items-center gap-3 bg-black/20 border border-white/10 backdrop-blur-xl py-1 px-4 rounded-full shadow-lg shadow-black/20"
+        style={{
+          boxShadow: "inset 0 0 2px 1px rgba(255,255,255,0.15), 0 24px 60px rgba(2,6,23,0.55)",
+          WebkitBackdropFilter: "blur(24px)",
+          backdropFilter: "blur(24px)",
+        }}
+      >
         {items.map((item) => {
           const Icon = item.icon
           const isActive = activeTab === item.name
@@ -55,7 +68,8 @@ export function NavBar({ items, className }: NavBarProps) {
               {isActive && (
                 <motion.div
                   layoutId="tubelight"
-                  className="absolute inset-0 w-full bg-white/5 rounded-full -z-10"
+                  className="absolute inset-0 w-full rounded-full -z-10"
+                  style={{ background: "rgba(255,255,255,0.04)" }}
                   initial={false}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 >

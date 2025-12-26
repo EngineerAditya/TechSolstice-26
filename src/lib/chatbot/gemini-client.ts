@@ -1,10 +1,11 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-if (!process.env.GEMINI_API_KEY) {
-  throw new Error('GEMINI_API_KEY is not set in environment variables');
+// Defer throwing until runtime. Creating the client at module evaluation
+// time causes Next.js build to fail when the env var isn't present.
+let genAI: GoogleGenerativeAI | null = null;
+if (process.env.GEMINI_API_KEY) {
+  genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 }
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Use the cheapest available models
 const CHAT_MODEL = 'gemini-2.5-flash-lite';
@@ -17,33 +18,41 @@ export async function generateChatResponse(
   prompt: string,
   systemInstruction?: string
 ): Promise<string> {
-  try {
-    const model = genAI.getGenerativeModel({
-      model: CHAT_MODEL,
-      systemInstruction: systemInstruction,
-    });
+    if (!genAI) {
+      throw new Error('GEMINI_API_KEY is not configured. Set GEMINI_API_KEY to use the Gemini client.');
+    }
 
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    return response.text();
-  } catch (error: any) {
-    console.error('Gemini API Error:', error.message);
-    throw new Error('Failed to generate response from AI');
-  }
+    try {
+      const model = genAI.getGenerativeModel({
+        model: CHAT_MODEL,
+        systemInstruction: systemInstruction,
+      });
+
+      const result = await model.generateContent(prompt);
+      const response = result.response;
+      return response.text();
+    } catch (error: any) {
+      console.error('Gemini API Error:', error?.message ?? error);
+      throw new Error('Failed to generate response from AI');
+    }
 }
 
 /**
  * Generate embeddings for text using Gemini
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
-  try {
-    const model = genAI.getGenerativeModel({ model: EMBEDDING_MODEL });
-    const result = await model.embedContent(text);
-    return result.embedding.values;
-  } catch (error: any) {
-    console.error('Embedding generation error:', error.message);
-    throw new Error('Failed to generate embedding');
-  }
+    if (!genAI) {
+      throw new Error('GEMINI_API_KEY is not configured. Set GEMINI_API_KEY to use the Gemini client.');
+    }
+
+    try {
+      const model = genAI.getGenerativeModel({ model: EMBEDDING_MODEL });
+      const result = await model.embedContent(text);
+      return result.embedding.values;
+    } catch (error: any) {
+      console.error('Embedding generation error:', error?.message ?? error);
+      throw new Error('Failed to generate embedding');
+    }
 }
 
 /**
