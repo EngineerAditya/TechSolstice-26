@@ -56,8 +56,16 @@ export const Footer = () => {
   const tablet = useMediaQuery("(max-width: 1024px)");
 
   return (
-    <footer id="footer" className="w-full pb-0">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between p-6 sm:p-8 md:p-10 gap-8 md:gap-4">
+    <footer
+      id="footer"
+      className="w-full pb-0 bg-black/40 backdrop-blur-md border-t border-white/10 pt-16 relative z-10 overflow-hidden"
+    >
+      {/* subtle centered glow above the top border to separate footer from content */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 pointer-events-none">
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-neutral-500/20 to-transparent opacity-70" />
+      </div>
+
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between p-6 sm:p-8 md:p-10 gap-8 md:gap-4 relative z-20">
         <div className="flex flex-col items-start justify-start gap-y-4 max-w-xs mx-0">
           <a href="#" className="flex items-center gap-2">
             <Icons.logo className="size-6 sm:size-8 text-white" />
@@ -98,9 +106,13 @@ export const Footer = () => {
       
       {/* Only show FlickeringGrid on tablet and larger devices */}
       {isTabletOrLarger && (
-        <div className="w-full h-80 md:h-96 lg:h-[600px] relative mt-12 sm:mt-16 md:mt-24 z-0">
-          {/* solid black background layer beneath the flicker */}
-          <div className="absolute inset-0 bg-black z-0" />
+        <div
+          className="w-full h-80 md:h-96 lg:h-[600px] relative mt-12 sm:mt-16 md:mt-24 z-0"
+          style={{
+            WebkitMaskImage: "linear-gradient(to bottom, transparent, black 20%)",
+            maskImage: "linear-gradient(to bottom, transparent, black 20%)",
+          }}
+        >
           {/* flicker container - we lazy-load the flicker when this container enters the viewport */}
           <FlickerOnView
             text={tablet ? "Solstice'26" : "TechSolstice'26"}
@@ -140,7 +152,7 @@ function FlickerOnView({ text, baseFontSize }: { text: string; baseFontSize: num
   }, []);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 mx-3 sm:mx-6 z-10">
+    <div ref={containerRef} className="absolute inset-0 z-10 w-full">
       {loadFlicker ? (
         <FlickeringGridResponsiveLazy
           text={text}
