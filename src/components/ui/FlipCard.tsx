@@ -20,17 +20,15 @@ export function FlipCard({ front, back }: FlipCardProps) {
           }`}
         >
           <div
-            className="absolute inset-0 backface-hidden"
+            className="absolute inset-0 backface-hidden bg"
           >
             {front}
-            <Button onClick={() => setIsFlipped(true)} size="lg" className="w-full bg-cyan-500 hover:bg-cyan-600 text-black font-bold">Registration</Button>
-          </div>
+            </div>
 
           <div
             className="absolute inset-0 backface-hidden transform-[rotateY(180deg)]"
           >
             {back}
-            <button onClick={() => setIsFlipped(false)}>Flip to Front</button>
           </div>
         </div>
       </div>
