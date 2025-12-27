@@ -3,9 +3,8 @@
 import { useState } from "react";
 import ExpandableCard from "@/components/ui/expandable-card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { Calendar, Clock, MapPin,Trophy} from "lucide-react";
 import Teamregform from "./ui/Teamregform";
-
 export type Event = {
   id: string;
   name: string;
@@ -16,7 +15,9 @@ export type Event = {
   time: string;
   venue: string;
   imageUrl: string;
+  prize_pool: string;
 };
+
 
 export function EventCard({ event }: { event: Event }) {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -62,6 +63,10 @@ export function EventCard({ event }: { event: Event }) {
           <div className="flex items-center gap-2 p-3 bg-white/5 rounded-lg">
             <MapPin size={18} className="text-cyan-400 shrink-0" />
             <span className="text-sm">{event.venue}</span>
+          </div>
+          <div className="relative left-122.5 mt-3 flex items-center justify-center gap-2 w-max px-3 py-2 border-3 outline-2 outline-[#C9A227] border-black bg-linear-to-r from-[#FF9500] via-[#FFCC00] to-[#FFCC00] rounded-2xl">
+            <span className="text-base font-bold text-white"><Trophy size={17} className="text-white shrink-0 inline-flex" /> Prize</span>
+            <span className="text-2xl font-bold text-white">₹{event.prize_pool}</span>
           </div>
         </div>
 
