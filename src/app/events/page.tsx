@@ -28,7 +28,7 @@ const EventsPage = async ({
   const params = await searchParams;
   
   const allEvents = await getEvents();
-  // allEvents.length = 0;     //Comment out to see events
+  allEvents.length = 0;     //Comment out to see events
   
   if (allEvents.length === 0) {
     return (

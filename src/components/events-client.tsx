@@ -4,17 +4,17 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Rocket, Cpu, Code, Gamepad2 } from "lucide-react";
+import { Search, Rocket, Cpu, Code, Gamepad2, Star, Medal} from "lucide-react";
 import { motion } from "framer-motion";
 import { EventCard, type Event } from "@/components/event-card";
 
-
 const filterCategories = [
   { name: "All", icon: <Rocket size={16} /> },
-  { name: "Flagship", icon: <Cpu size={16} /> },
-  { name: "Workshop", icon: <Code size={16} /> },
-  { name: "Tech", icon: <Cpu size={16} /> },
+  { name: "Flagship", icon: <Star size={16} /> },
+  { name: "Conference", icon: <Code size={16} /> },
+  { name: "Technology", icon: <Cpu size={16} /> },
   { name: "Gaming", icon: <Gamepad2 size={16} /> },
+  {name :"Sports",icon: <Medal size={16}/>}
 ];
 
 export function EventsClient({
