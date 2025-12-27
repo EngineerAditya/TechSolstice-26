@@ -1,6 +1,7 @@
 "use client";
 
 import { HeroRobot } from "../components/hero-robot";
+import ScrollExpansionVideo from "@/components/ui/scroll-expansion-video";
 import { LoadingScreen } from "../components/loading-screen";
 import { useState, useEffect } from "react";
 
@@ -22,14 +23,9 @@ export default function Home() {
         {/* Hero section with robot - no background here, let global bg show */}
         <HeroRobot />
 
-        {/* Content section with gradient overlay to separate from hero */}
-        <div className="min-h-screen bg-linear-to-b from-black/80 via-neutral-900/80 to-black/80 backdrop-blur-sm p-4 sm:p-6 md:p-10">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
-            Welcome to TechSolstice'26
-          </h2>
-          <p className="mt-2 text-sm sm:text-base md:text-lg text-neutral-300">
-            Explore, innovate, and create with us.
-          </p>
+        {/* Add spacing below the robot, then the scroll-expanding video */}
+        <div className="mt-12 md:mt-20 lg:mt-28">
+          <ScrollExpansionVideo mediaSrc="/videos/logo-reveal.mp4" title="TechSolstice'26 — Reveal" scrollToExpand="Scroll to expand" />
         </div>
       </div>
     </>
