@@ -1,6 +1,8 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import {Hourglass} from 'ldrs/react'
+import 'ldrs/react/Hourglass.css'
 
 export default async function PassesPage() {
   const supabase = await createClient()
@@ -22,6 +24,68 @@ export default async function PassesPage() {
     .eq('id', user.id)
     .single()
 
+
+
+const isvisible = false;    //change to true to see passes
+  if(!isvisible){
+    return (
+    <div className="min-h-screen w-full flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Animated background blur circles */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/30 rounded-full blur-3xl animate-spin"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-spin delay-500"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-spin delay-1000"></div>
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 text-center space-y-8 max-w-4xl">
+        {/* Main heading with shimmer effect */}
+        <div className="relative">
+          <h1 
+              className="text-7xl md:text-9xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]"
+              style={{ 
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                paddingBottom: '0.1em' // Add padding to prevent cutoff
+              }}
+            >
+              Coming Soon
+            </h1>
+        </div>
+        
+        {/* Subtitle */}
+        <p className="text-2xl mt-15 md:text-3xl text-gray-300 font-light tracking-wide">
+          Passes Out Soon!
+        </p>
+        <Hourglass
+          size="40"
+          bgOpacity="0.1"
+          speed="1.75"
+          color="cyan" 
+        />        
+
+        {/* Decorative line */}
+        <div className="flex items-center justify-center gap-4 pt-4">
+          <div className="h-px w-24 bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
+          <div className="text-cyan-400 text-sm uppercase tracking-widest">Stay Tuned</div>
+          <div className="h-px w-24 bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes gradient {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .animate-gradient {
+          animation: gradient 3s ease infinite;
+        }
+      `}</style>
+    </div>
+  );
+}
+else{
   return (
     <div className="min-h-screen bg-transparent text-white pb-20">
       {/* Header */}
@@ -102,4 +166,5 @@ export default async function PassesPage() {
       </main>
     </div>
   )
+}
 }
