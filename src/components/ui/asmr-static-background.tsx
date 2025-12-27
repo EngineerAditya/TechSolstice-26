@@ -146,7 +146,9 @@ const ASMRStaticBackground: React.FC = () => {
 
     const render = () => {
       // slight motion blur for depth
-      ctx.fillStyle = isMobile ? "rgba(10,10,12,0.22)" : "rgba(10,10,12,0.18)";
+      // Reduce the global wash so the page background and navbar blend more seamlessly
+      // Keep a very subtle wash for depth on large screens
+      ctx.fillStyle = isMobile ? "rgba(10,10,12,0.06)" : "rgba(10,10,12,0.04)";
       ctx.fillRect(0, 0, width, height);
 
       // Draw particles (limit per frame for performance on mobile)

@@ -1,9 +1,9 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { Icons } from "./ui/icons";
 import { useEffect, useRef, useState } from "react";
 
 // Dynamically load the responsive flicker component on client only
@@ -13,40 +13,27 @@ const FlickeringGridResponsiveLazy = dynamic(
 );
 
 export const siteConfig = {
-  hero: {
-    title: "TechSolstice'26",
-    description:
-      "Welcome to the future. Explore, innovate, and create with us.",
+  contactData: {
+    eventName: "TechSolstice'26",
+    address: [
+      "Manipal Institute of Technology",
+      "Yelahanka, Bengaluru",
+      "Karnataka - 560064",
+    ],
+    generalEmail: "fest.mitblr@manipal.edu",
+    contacts: [
+      {
+        name: "Aishani Sharma",
+        role: "HR Head",
+        phone: "+91 95353 90081",
+      },
+      {
+        name: "Swaraj Shewale",
+        role: "HR Head",
+        phone: "+91 90281 86267",
+      },
+    ],
   },
-  footerLinks: [
-    {
-      title: "Event",
-      links: [
-        { id: 1, title: "About", url: "#about" },
-        { id: 2, title: "Schedule", url: "#schedule" },
-        { id: 3, title: "Speakers", url: "#speakers" },
-        { id: 4, title: "Venue", url: "#venue" },
-      ],
-    },
-    {
-      title: "Participate",
-      links: [
-        { id: 5, title: "Register", url: "#register" },
-        { id: 6, title: "Workshops", url: "#workshops" },
-        { id: 7, title: "Competitions", url: "#competitions" },
-        { id: 8, title: "Sponsors", url: "#sponsors" },
-      ],
-    },
-    {
-      title: "Connect",
-      links: [
-        { id: 9, title: "Contact", url: "#contact" },
-        { id: 10, title: "Team", url: "#team" },
-        { id: 11, title: "Newsletter", url: "#newsletter" },
-        { id: 12, title: "Social", url: "#social" },
-      ],
-    },
-  ],
 };
 
 export type SiteConfig = typeof siteConfig;
@@ -56,55 +43,74 @@ export const Footer = () => {
   const tablet = useMediaQuery("(max-width: 1024px)");
 
   return (
-    <footer id="footer" className="w-full pb-0">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between p-6 sm:p-8 md:p-10 gap-8 md:gap-4">
-        <div className="flex flex-col items-start justify-start gap-y-4 max-w-xs mx-0">
-          <a href="#" className="flex items-center gap-2">
-            <Icons.logo className="size-6 sm:size-8 text-white" />
-            <p className="text-lg sm:text-xl font-semibold text-white">TechSolstice</p>
-          </a>
-          <p className="tracking-tight text-neutral-300 font-medium text-sm sm:text-base">
-            {siteConfig.hero.description}
-          </p>
+    <footer
+      id="footer"
+      className="w-full pb-0 bg-black/40 backdrop-blur-md border-t border-white/10 pt-16 relative z-10 overflow-hidden"
+    >
+      {/* subtle centered glow above the top border to separate footer from content */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 pointer-events-none">
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-neutral-500/20 to-transparent opacity-70" />
+      </div>
+
+      <div className="w-full relative z-20 py-6 md:py-10">
+        {/* Left content: full-width on mobile, pinned to left edge on md+ */}
+        <div className="w-full md:absolute md:left-0 md:top-0 md:bottom-0 md:flex md:items-start md:pl-0">
+          <div className="px-6 md:px-[5px]">
+            <h2 className="text-3xl md:text-4xl font-semibold text-white">{siteConfig.contactData.eventName}</h2>
+            <div className="mt-2 text-sm text-neutral-400">
+              {siteConfig.contactData.address.map((l, i) => (
+                <div key={i}>{l}</div>
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="w-full md:w-1/2">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8 lg:pl-10">
-            {siteConfig.footerLinks.map((column, columnIndex) => (
-              <ul key={columnIndex} className="flex flex-col gap-y-2">
-                <li className="mb-2 text-xs sm:text-sm font-semibold text-white">
-                  {column.title}
-                </li>
-                {column.links.map((link) => (
-                  <li
-                    key={link.id}
-                    className="group inline-flex cursor-pointer items-center justify-start gap-1 text-[13px] sm:text-[15px]/snug"
-                  >
-                    <a 
-                      href={link.url}
-                      className="text-neutral-400 hover:text-white transition-colors no-underline"
-                    >
-                      {link.title}
-                    </a>
-                    <div className="hidden sm:flex size-4 items-center justify-center border border-neutral-600 rounded translate-x-0 transform opacity-0 transition-all duration-300 ease-out group-hover:translate-x-1 group-hover:opacity-100">
-                      <ChevronRight className="h-4 w-4 text-neutral-400" />
+
+        {/* Center Logos: centered within page width */}
+        <div className="mx-auto w-full max-w-7xl flex items-center justify-center py-4 hidden md:flex">
+          <div className="flex items-center gap-8">
+            <Image src="/logos/logo.png" alt="ts-logo" width={160} height={160} className="h-28 md:h-32 lg:h-36 w-auto" />
+            <Image src="/logos/font-logo.png" alt="ts-wordmark" width={320} height={96} className="h-20 md:h-24 lg:h-28 w-auto" />
+          </div>
+        </div>
+
+        {/* Right content: full-width on mobile, pinned to right edge on md+ */}
+        <div className="w-full md:absolute md:right-0 md:top-0 md:bottom-0 md:flex md:items-start md:pr-0">
+          <div className="px-6 md:px-[5px] w-full">
+            <div className="text-right">
+              <h3 className="text-xl font-semibold text-white">Contact Us</h3>
+              <div className="mt-2 text-sm text-neutral-400 w-full max-w-sm ml-auto">
+                <div className="flex items-center justify-end gap-2"><Mail className="h-4 w-4 text-neutral-400" /> <span className="text-right">{siteConfig.contactData.generalEmail}</span></div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-end gap-8 w-full max-w-md ml-auto">
+                {siteConfig.contactData.contacts.map((c, idx) => (
+                  <div key={idx} className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Phone className="h-4 w-4 text-neutral-400" />
+                      <span className="text-white font-medium">{c.phone}</span>
                     </div>
-                  </li>
+                    <div className="text-sm text-neutral-400">{c.name} — {c.role}</div>
+                  </div>
                 ))}
-              </ul>
-            ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      
+
       {/* Only show FlickeringGrid on tablet and larger devices */}
       {isTabletOrLarger && (
-        <div className="w-full h-80 md:h-96 lg:h-[600px] relative mt-12 sm:mt-16 md:mt-24 z-0">
-          {/* solid black background layer beneath the flicker */}
-          <div className="absolute inset-0 bg-black z-0" />
+        <div
+          className="w-full h-48 md:h-[60vh] relative mt-4 md:mt-8 z-0"
+          style={{
+            WebkitMaskImage: "linear-gradient(to bottom, transparent, black 20%)",
+            maskImage: "linear-gradient(to bottom, transparent, black 20%)",
+          }}
+        >
           {/* flicker container - we lazy-load the flicker when this container enters the viewport */}
           <FlickerOnView
             text={tablet ? "Solstice'26" : "TechSolstice'26"}
-            baseFontSize={tablet ? 90 : 140}
+            baseFontSize={tablet ? 80 : 160}
           />
         </div>
       )}
@@ -140,7 +146,7 @@ function FlickerOnView({ text, baseFontSize }: { text: string; baseFontSize: num
   }, []);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 mx-3 sm:mx-6 z-10">
+    <div ref={containerRef} className="absolute inset-0 z-10 w-full">
       {loadFlicker ? (
         <FlickeringGridResponsiveLazy
           text={text}

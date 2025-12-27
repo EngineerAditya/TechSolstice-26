@@ -44,8 +44,8 @@ export default function RootLayout({
           <TechSolsticeNavbar />
         </div>
 
-        {/* Main content area - medium z-index, reserve space for navbar */}
-        <div className="relative z-10 pt-20">
+        {/* Main content area - medium z-index; navbar is fixed so no top padding needed */}
+        <div className="relative z-10">
           {children}
         </div>
 

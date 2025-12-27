@@ -5,7 +5,6 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import ASMRStaticBackground from "./asmr-static-background";
-import ASMRCardBg from "./asmrcardbg";
 
 
 interface ExpandableCardProps {
@@ -68,7 +67,7 @@ export function ExpandableCard({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setActive(false)}
-            className="fixed inset-0 bg-black/80 backdrop-blur-xs z-99999"
+7            className="fixed inset-0 bg-black/80 backdrop-blur-md z-99999"
           />
 
           {/* Card Container */}
@@ -110,7 +109,21 @@ export function ExpandableCard({
                   className="absolute inset-0 rounded-3xl shadow-2xl border border-white/10 overflow-hidden flex flex-col"
                   style={{ backfaceVisibility: "hidden" }}
                 >
-                  <ASMRCardBg/>
+                  <ASMRStaticBackground/>
+                  {/* Image Section */}
+                  <motion.div layoutId={`image-${title}-${id}`}>
+                    <div className="relative">
+                      {src ? (
+                        <img
+                          src={src}
+                          alt={title}
+                          className="w-full h-48 sm:h-56 object-cover object-center"
+                        />
+                      ) : (
+                        <div className="w-full h-48 sm:h-56 bg-linear-to-br from-gray-800 to-zinc-900" />
+                      )}
+                    </div>
+                  </motion.div>
                   {/* Header + Content */}
                   <div className="relative flex-1 flex flex-col">
                     <div className="flex justify-between items-start p-4 sm:p-6">
@@ -154,7 +167,7 @@ export function ExpandableCard({
                     </div>
 
                     {/* Scrollable front content */}
-                    <div className="flex-1 min-h-0 px-4 sm:px-6 pb-6 overflow-y-auto">
+                    <div className="flex-1 px-4 sm:px-6 pb-6 overflow-auto">
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
