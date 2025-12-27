@@ -80,8 +80,17 @@ export function LoadingScreen({ onLoadingComplete, minDuration = 1500 }: Loading
         return
       }
 
+      // Treat lazy-loaded images as non-blocking for the initial loader
+      const relevantImages = images.filter(img => img.loading !== 'lazy')
+
+      if (relevantImages.length === 0) {
+        loadingStates.images = true
+        updateProgress()
+        return
+      }
+
       Promise.all(
-        images.map(img => {
+        relevantImages.map(img => {
           if (img.complete) return Promise.resolve()
           return new Promise(resolve => {
             img.onload = () => resolve(undefined)
