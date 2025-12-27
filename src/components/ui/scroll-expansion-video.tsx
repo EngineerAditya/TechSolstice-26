@@ -49,11 +49,20 @@ export default function ScrollExpansionVideo({ mediaSrc, title, scrollToExpand }
       }
     };
     el.addEventListener('canplay', onCanPlay);
+    // ensure looping in case attribute isn't respected on some browsers
+    try {
+      el.loop = true;
+    } catch (err) {}
+    const onEnded = () => {
+      try { void el.play().catch(() => {}); } catch (e) {}
+    };
+    el.addEventListener('ended', onEnded);
 
     io.observe(el);
     return () => {
       io.disconnect();
       el.removeEventListener('canplay', onCanPlay);
+      el.removeEventListener('ended', onEnded);
     };
   }, []);
 
