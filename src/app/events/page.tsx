@@ -28,16 +28,16 @@ const EventsPage = async ({
   const params = await searchParams;
   
   const allEvents = await getEvents();
-  allEvents.length = 0;     //Comment out to see events
+  // allEvents.length = 0;     //Comment out to see events
   
   if (allEvents.length === 0) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center px-4 relative overflow-hidden">
         {/* Animated background blur circles */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/30 rounded-full blur-3xl animate-spin"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-spin delay-500"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-spin delay-1000"></div>
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#E5E5E5]/20 rounded-full blur-3xl animate-spin"></div>
+          <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-gray-400/20 rounded-full blur-3xl animate-spin delay-500"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#6C7A89]/20 rounded-full blur-3xl animate-spin delay-1000"></div>
         </div>
 
         {/* Content */}
@@ -45,7 +45,7 @@ const EventsPage = async ({
           {/* Main heading with shimmer effect - FIXED */}
           <div className="relative px-4">
             <h1 
-              className="text-7xl md:text-9xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]"
+              className="text-7xl md:text-9xl font-bold bg-linear-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent animate-gradient bg-size-[200%_auto]"
               style={{ 
                 WebkitBackgroundClip: 'text',
                 backgroundClip: 'text',
@@ -71,9 +71,9 @@ const EventsPage = async ({
 
           {/* Decorative line */}
           <div className="flex items-center justify-center gap-4 pt-4">
-            <div className="h-px w-24 bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
+            <div className="h-px w-24 bg-linear-to-rrom-transparent via-cyan-400 to-transparent"></div>
             <div className="text-cyan-400 text-sm uppercase tracking-widest">Stay Tuned</div>
-            <div className="h-px w-24 bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
+            <div className="h-px w-24 bg-linear-to-r from-transparent via-cyan-400 to-transparent"></div>
           </div>
         </div>
 
