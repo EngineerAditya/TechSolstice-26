@@ -68,7 +68,7 @@ export function ExpandableCard({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setActive(false)}
-            className="fixed inset-0 bg-black/80 backdrop-blur-md z-99999"
+            className="fixed inset-0 bg-black/80 backdrop-blur-xs z-99999"
           />
 
           {/* Card Container */}
