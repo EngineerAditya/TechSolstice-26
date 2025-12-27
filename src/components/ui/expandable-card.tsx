@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import ASMRStaticBackground from "./asmr-static-background";
+import ASMRCardBg from "./asmrcardbg";
 
 
 interface ExpandableCardProps {
@@ -109,7 +110,7 @@ export function ExpandableCard({
                   className="absolute inset-0 rounded-3xl shadow-2xl border border-white/10 overflow-hidden flex flex-col"
                   style={{ backfaceVisibility: "hidden" }}
                 >
-                  <ASMRStaticBackground/>
+                  <ASMRCardBg/>
                   {/* Image Section */}
                   <motion.div layoutId={`image-${title}-${id}`}>
                     <div className="relative">
